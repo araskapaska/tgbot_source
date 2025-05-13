@@ -4,13 +4,13 @@ TGBOT SOLAR API
 
 Скопируй telegram_bot.lua в корень проекта.
 
-*Документация
-Подробности: https://yourdomain.com/docs
+Документация
+Подробности: https://tgbot-solar2d.vercel.app/
 Поддержка
 
 Исходный код: GitHub
 Обсуждение: Telegram-канал
-Контакт: @xqss_DEVELOPER*
+Контакт: @xqss_DEVELOPER
 
 Лицензия
 MIT
