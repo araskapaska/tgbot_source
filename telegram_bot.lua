@@ -1,11 +1,11 @@
--- единый плагин для ботов и юзерботов в telegram
--- автор: @xqss_DEVELOPER
+-- Единый плагин для ботов и юзерботов в Telegram
+-- Автор: @xqss_DEVELOPER
 
 local json = require("json")
 local http = require("socket.http")
 local ltn12 = require("ltn12")
 local mime = require("mime")
-local mtproto = require("lua-telegram-mtproto") -- заглушка, нужна mtproto-библиотека
+local mtproto = require("lua-telegram-mtproto") -- Требуется MTProto-библиотека
 
 local telegram = {}
 local baseUrl = "https://api.telegram.org/bot"
@@ -16,7 +16,7 @@ local apiId = nil
 local apiHash = nil
 local sessionData = nil
 
--- заменяем константы в тексте
+-- Замена констант в тексте
 local function replaceConstants(text)
     if not text or type(text) ~= "string" then return text end
     local replacements = {
@@ -35,19 +35,19 @@ end
 
 -- === API для ботов ===
 
--- инициализация бота
+-- Инициализация бота
 function telegram.initBot(params)
     botToken = params.token
     if not botToken then
-        error("токен обязателен!")
+        error("Токен обязателен!")
     end
     telegram.botName = params.botName or "UnknownBot"
 end
 
--- отправка http-запроса для бота
+-- Отправка HTTP-запроса для бота
 local function sendBotRequest(method, params, callback)
     if not botToken then
-        if callback then callback(nil, "бот не инициализирован") end
+        if callback then callback(nil, "Бот не инициализирован") end
         return
     end
     local url = baseUrl .. botToken .. "/" .. method
@@ -73,14 +73,14 @@ local function sendBotRequest(method, params, callback)
         if decoded.ok then
             if callback then callback(decoded.result, nil) end
         else
-            if callback then callback(nil, decoded.description or "ошибка api") end
+            if callback then callback(nil, decoded.description or "Ошибка API") end
         end
     else
-        if callback then callback(nil, "http ошибка: " .. code) end
+        if callback then callback(nil, "HTTP ошибка: " .. code) end
     end
 end
 
--- отправка сообщения
+-- Отправка сообщения
 function telegram.sendMessage(chatId, text, options, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -98,7 +98,7 @@ function telegram.sendMessage(chatId, text, options, callback)
     sendBotRequest("sendMessage", params, callback)
 end
 
--- отправка медиа
+-- Отправка медиа
 function telegram.sendMedia(chatId, type, media, options, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -115,7 +115,7 @@ function telegram.sendMedia(chatId, type, media, options, callback)
     sendBotRequest("send" .. type:gsub("^%l", string.upper), params, callback)
 end
 
--- отправка inline-клавиатуры
+-- Отправка inline-клавиатуры
 function telegram.sendInlineKeyboard(chatId, text, keyboard, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -129,7 +129,7 @@ function telegram.sendInlineKeyboard(chatId, text, keyboard, callback)
     sendBotRequest("sendMessage", params, callback)
 end
 
--- ответ на callback-запрос
+-- Ответ на callback-запрос
 function telegram.answerCallbackQuery(callbackQueryId, text, showAlert, callback)
     local params = {
         callback_query_id = callbackQueryId
@@ -139,7 +139,7 @@ function telegram.answerCallbackQuery(callbackQueryId, text, showAlert, callback
     sendBotRequest("answerCallbackQuery", params, callback)
 end
 
--- редактирование сообщения
+-- Редактирование сообщения
 function telegram.editMessage(chatId, messageId, text, options, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -157,7 +157,7 @@ function telegram.editMessage(chatId, messageId, text, options, callback)
     sendBotRequest("editMessageText", params, callback)
 end
 
--- удаление сообщения
+-- Удаление сообщения
 function telegram.deleteMessage(chatId, messageId, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -170,7 +170,7 @@ function telegram.deleteMessage(chatId, messageId, callback)
     sendBotRequest("deleteMessage", params, callback)
 end
 
--- получение информации о чате
+-- Получение информации о чате
 function telegram.getChat(chatId, callback)
     local params = {
         chat_id = chatId or lastChatId
@@ -182,7 +182,7 @@ function telegram.getChat(chatId, callback)
     sendBotRequest("getChat", params, callback)
 end
 
--- получение администраторов чата
+-- Получение администраторов чата
 function telegram.getChatAdministrators(chatId, callback)
     local params = {
         chat_id = chatId or lastChatId
@@ -194,7 +194,7 @@ function telegram.getChatAdministrators(chatId, callback)
     sendBotRequest("getChatAdministrators", params, callback)
 end
 
--- получение участника чата
+-- Получение участника чата
 function telegram.getChatMember(chatId, userId, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -207,7 +207,7 @@ function telegram.getChatMember(chatId, userId, callback)
     sendBotRequest("getChatMember", params, callback)
 end
 
--- кик участника чата
+-- Кик участника чата
 function telegram.kickChatMember(chatId, userId, untilDate, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -221,7 +221,7 @@ function telegram.kickChatMember(chatId, userId, untilDate, callback)
     sendBotRequest("kickChatMember", params, callback)
 end
 
--- ограничение участника чата
+-- Ограничение участника чата
 function telegram.restrictChatMember(chatId, userId, permissions, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -235,7 +235,7 @@ function telegram.restrictChatMember(chatId, userId, permissions, callback)
     sendBotRequest("restrictChatMember", params, callback)
 end
 
--- повышение участника до админа
+-- Повышение участника до админа
 function telegram.promoteChatMember(chatId, userId, options, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -253,7 +253,7 @@ function telegram.promoteChatMember(chatId, userId, options, callback)
     sendBotRequest("promoteChatMember", params, callback)
 end
 
--- установка заголовка чата
+-- Установка заголовка чата
 function telegram.setChatTitle(chatId, title, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -266,7 +266,7 @@ function telegram.setChatTitle(chatId, title, callback)
     sendBotRequest("setChatTitle", params, callback)
 end
 
--- установка описания чата
+-- Установка описания чата
 function telegram.setChatDescription(chatId, description, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -279,7 +279,7 @@ function telegram.setChatDescription(chatId, description, callback)
     sendBotRequest("setChatDescription", params, callback)
 end
 
--- закрепление сообщения
+-- Закрепление сообщения
 function telegram.pinChatMessage(chatId, messageId, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -292,7 +292,7 @@ function telegram.pinChatMessage(chatId, messageId, callback)
     sendBotRequest("pinChatMessage", params, callback)
 end
 
--- открепление сообщения
+-- Открепление сообщения
 function telegram.unpinChatMessage(chatId, messageId, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -305,7 +305,7 @@ function telegram.unpinChatMessage(chatId, messageId, callback)
     sendBotRequest("unpinChatMessage", params, callback)
 end
 
--- выход из чата
+-- Выход из чата
 function telegram.leaveChat(chatId, callback)
     local params = {
         chat_id = chatId or lastChatId
@@ -317,7 +317,7 @@ function telegram.leaveChat(chatId, callback)
     sendBotRequest("leaveChat", params, callback)
 end
 
--- получение фото профиля
+-- Получение фото профиля
 function telegram.getUserProfilePhotos(userId, callback)
     local params = {
         user_id = userId
@@ -325,7 +325,7 @@ function telegram.getUserProfilePhotos(userId, callback)
     sendBotRequest("getUserProfilePhotos", params, callback)
 end
 
--- отправка стикера
+-- Отправка стикера
 function telegram.sendSticker(chatId, sticker, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -338,7 +338,7 @@ function telegram.sendSticker(chatId, sticker, callback)
     sendBotRequest("sendSticker", params, callback)
 end
 
--- отправка голосового сообщения
+-- Отправка голосового сообщения
 function telegram.sendVoice(chatId, voice, options, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -354,7 +354,7 @@ function telegram.sendVoice(chatId, voice, options, callback)
     sendBotRequest("sendVoice", params, callback)
 end
 
--- отправка видеозаметки
+-- Отправка видеозаметки
 function telegram.sendVideoNote(chatId, videoNote, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -367,8 +367,11 @@ function telegram.sendVideoNote(chatId, videoNote, callback)
     sendBotRequest("sendVideoNote", params, callback)
 end
 
--- отправка геолокации
+-- Отправка геолокации
 function telegram.sendLocation(chatId, latitude, longitude, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        latitude = latitude SoftLayer uses this to determine the latitude and longitude of the user.
     local params = {
         chat_id = chatId or lastChatId,
         latitude = latitude,
@@ -381,7 +384,7 @@ function telegram.sendLocation(chatId, latitude, longitude, callback)
     sendBotRequest("sendLocation", params, callback)
 end
 
--- отправка контакта
+-- Отправка контакта
 function telegram.sendContact(chatId, phoneNumber, firstName, lastName, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -396,7 +399,7 @@ function telegram.sendContact(chatId, phoneNumber, firstName, lastName, callback
     sendBotRequest("sendContact", params, callback)
 end
 
--- пересылка сообщения
+-- Пересылка сообщения
 function telegram.forwardMessage(chatId, fromChatId, messageId, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -410,7 +413,7 @@ function telegram.forwardMessage(chatId, fromChatId, messageId, callback)
     sendBotRequest("forwardMessage", params, callback)
 end
 
--- копирование сообщения
+-- Копирование сообщения
 function telegram.copyMessage(chatId, fromChatId, messageId, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -424,28 +427,28 @@ function telegram.copyMessage(chatId, fromChatId, messageId, callback)
     sendBotRequest("copyMessage", params, callback)
 end
 
--- получение информации о боте
+-- Получение информации о боте
 function telegram.getMe(callback)
     sendBotRequest("getMe", {}, callback)
 end
 
--- выход из аккаунта бота
+-- Выход из аккаунта бота
 function telegram.logOut(callback)
     sendBotRequest("logOut", {}, callback)
 end
 
--- закрытие сессии бота
+-- Закрытие сессии бота
 function telegram.close(callback)
     sendBotRequest("close", {}, callback)
 end
 
--- запуск polling (бот)
+-- Запуск polling (бот)
 function telegram.startBotPolling(eventHandler)
     local offset = 0
     local function poll()
         sendBotRequest("getUpdates", {offset = offset + 1, timeout = 30}, function(result, error)
             if error then
-                print("ошибка polling: " .. error)
+                print("Ошибка polling: " .. error)
                 timer.performWithDelay(1000, poll)
                 return
             end
@@ -453,31 +456,31 @@ function telegram.startBotPolling(eventHandler)
                 offset = math.max(offset, update.update_id)
                 local data = {}
                 if update.message then
-                    data.chatId = update.message.chat.id
+                    data.chat_id = update.message.chat.id
                     data.command = update.message.text and update.message.text:match("^/(%w+)")
                     data.text = update.message.text
-                    lastChatId = data.chatId
+                    lastChatId = data.chat_id
                     lastEventData = {
                         first_name = update.message.from.first_name or "",
                         last_name = update.message.from.last_name or "",
                         age = update.message.from.age or "0",
                         last_message_text = update.message.text or "",
                         username = update.message.from.username or "",
-                        chat_id = tostring(data.chatId)
+                        chat_id = tostring(data.chat_id)
                     }
                     eventHandler(update.message.text and "command" or "message", data)
                 elseif update.callback_query then
                     data.callbackQueryId = update.callback_query.id
                     data.data = update.callback_query.data
-                    data.chatId = update.callback_query.message.chat.id
-                    lastChatId = data.chatId
+                    data.chat_id = update.callback_query.message.chat.id
+                    lastChatId = data.chat_id
                     lastEventData = {
                         first_name = update.callback_query.from.first_name or "",
                         last_name = update.callback_query.from.last_name or "",
                         age = update.callback_query.from.age or "0",
                         last_message_text = update.callback_query.message.text or "",
                         username = update.callback_query.from.username or "",
-                        chat_id = tostring(data.chatId)
+                        chat_id = tostring(data.chat_id)
                     }
                     eventHandler("callback_query", data)
                 end
@@ -488,32 +491,32 @@ function telegram.startBotPolling(eventHandler)
     poll()
 end
 
--- настройка вебхука
+-- Настройка вебхука
 function telegram.setWebhook(url, callback)
     sendBotRequest("setWebhook", {url = url}, callback)
 end
 
--- удаление вебхука
+-- Удаление вебхука
 function telegram.deleteWebhook(callback)
     sendBotRequest("deleteWebhook", {}, callback)
 end
 
 -- === API для юзерботов ===
 
--- инициализация юзербота
+-- Инициализация юзербота
 function telegram.initUserbot(params)
     apiId = params.apiId
     apiHash = params.apiHash
     if not apiId or not apiHash then
-        error("apiId и apiHash обязательны! получи их на my.telegram.org")
+        error("apiId и apiHash обязательны! Получи их на my.telegram.org")
     end
     telegram.phoneNumber = params.phoneNumber
 end
 
--- авторизация: запрос кода
+-- Авторизация: запрос кода
 function telegram.requestCode(callback)
     if not telegram.phoneNumber then
-        if callback then callback(nil, "номер телефона не указан") end
+        if callback then callback(nil, "Номер телефона не указан") end
         return
     end
     mtproto.auth.sendCode({
@@ -530,10 +533,10 @@ function telegram.requestCode(callback)
     end)
 end
 
--- авторизация: вход
+-- Авторизация: вход
 function telegram.signIn(params, callback)
     if not sessionData or not sessionData.phone_code_hash then
-        if callback then callback(nil, "сначала запроси код через requestCode") end
+        if callback then callback(nil, "Сначала запроси код через requestCode") end
         return
     end
     local authParams = {
@@ -543,13 +546,13 @@ function telegram.signIn(params, callback)
         phone_code_hash = sessionData.phone_code_hash,
         phone_code = params.code
     }
-    if params.password then
-        authParams.password = params.password
+    if params.cloudPassword then
+        authParams.cloud_password = params.cloudPassword
     end
     mtproto.auth.signIn(authParams, function(result, error)
         if error then
             if error == "SESSION_PASSWORD_NEEDED" then
-                if callback then callback(nil, "нужен пароль 2FA") end
+                if callback then callback(nil, "Нужен облачный пароль") end
             else
                 if callback then callback(nil, error) end
             end
@@ -560,10 +563,10 @@ function telegram.signIn(params, callback)
     end)
 end
 
--- отправка mtproto-запроса
+-- Отправка MTProto-запроса
 local function sendUserbotRequest(method, params, callback)
     if not sessionData or not sessionData.auth_key then
-        if callback then callback(nil, "юзербот не авторизован") end
+        if callback then callback(nil, "Юзербот не авторизован") end
         return
     end
     mtproto.invoke({
@@ -579,9 +582,7 @@ local function sendUserbotRequest(method, params, callback)
     end)
 end
 
--- методы юзербота (30)
-
--- отправка сообщения
+-- Отправка сообщения
 function telegram.userbotSendMessage(chatId, text, options, callback)
     local params = {
         peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
@@ -593,11 +594,12 @@ function telegram.userbotSendMessage(chatId, text, options, callback)
     end
     if options then
         if options.parseMode then params.parse_mode = options.parseMode end
+        if options.replyMarkup then params.reply_markup = json.encode(options.replyMarkup) end
     end
     sendUserbotRequest("messages.sendMessage", params, callback)
 end
 
--- отправка медиа
+-- Отправка медиа
 function telegram.userbotSendMedia(chatId, type, media, options, callback)
     local params = {
         peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
@@ -613,7 +615,7 @@ function telegram.userbotSendMedia(chatId, type, media, options, callback)
     sendUserbotRequest("messages.sendMedia", params, callback)
 end
 
--- получение участников чата
+-- Получение участников чата
 function telegram.userbotGetChatMembers(chatId, callback)
     local params = {
         chat_id = chatId or lastChatId
@@ -625,7 +627,7 @@ function telegram.userbotGetChatMembers(chatId, callback)
     sendUserbotRequest("messages.getChatMembers", params, callback)
 end
 
--- пересылка сообщения
+-- Пересылка сообщения
 function telegram.userbotForwardMessage(fromChatId, messageId, toChatId, callback)
     local params = {
         from_peer = { ["@type"] = "inputPeerChat", chat_id = fromChatId },
@@ -639,7 +641,7 @@ function telegram.userbotForwardMessage(fromChatId, messageId, toChatId, callbac
     sendUserbotRequest("messages.forwardMessages", params, callback)
 end
 
--- редактирование сообщения
+-- Редактирование сообщения
 function telegram.userbotEditMessage(chatId, messageId, text, callback)
     local params = {
         peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
@@ -653,7 +655,7 @@ function telegram.userbotEditMessage(chatId, messageId, text, callback)
     sendUserbotRequest("messages.editMessage", params, callback)
 end
 
--- удаление сообщения
+-- Удаление сообщения
 function telegram.userbotDeleteMessage(chatId, messageId, callback)
     local params = {
         peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
@@ -666,7 +668,7 @@ function telegram.userbotDeleteMessage(chatId, messageId, callback)
     sendUserbotRequest("messages.deleteMessages", params, callback)
 end
 
--- создание чата
+-- Создание чата
 function telegram.userbotCreateChat(title, users, callback)
     local params = {
         title = title,
@@ -675,7 +677,7 @@ function telegram.userbotCreateChat(title, users, callback)
     sendUserbotRequest("messages.createChat", params, callback)
 end
 
--- присоединение к каналу
+-- Присоединение к каналу
 function telegram.userbotJoinChannel(channelId, callback)
     local params = {
         channel = { ["@type"] = "inputChannel", channel_id = channelId }
@@ -683,7 +685,7 @@ function telegram.userbotJoinChannel(channelId, callback)
     sendUserbotRequest("channels.joinChannel", params, callback)
 end
 
--- выход из канала
+-- Выход из канала
 function telegram.userbotLeaveChannel(channelId, callback)
     local params = {
         channel = { ["@type"] = "inputChannel", channel_id = channelId }
@@ -691,7 +693,7 @@ function telegram.userbotLeaveChannel(channelId, callback)
     sendUserbotRequest("channels.leaveChannel", params, callback)
 end
 
--- приглашение пользователей в чат
+-- Приглашение пользователей в чат
 function telegram.userbotInviteToChat(chatId, userIds, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -704,7 +706,7 @@ function telegram.userbotInviteToChat(chatId, userIds, callback)
     sendUserbotRequest("messages.addChatUsers", params, callback)
 end
 
--- кик пользователя из чата
+-- Кик пользователя из чата
 function telegram.userbotKickChatMember(chatId, userId, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -717,7 +719,7 @@ function telegram.userbotKickChatMember(chatId, userId, callback)
     sendUserbotRequest("messages.deleteChatUser", params, callback)
 end
 
--- получение истории чата
+-- Получение истории чата
 function telegram.userbotGetChatHistory(chatId, limit, callback)
     local params = {
         peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
@@ -730,7 +732,7 @@ function telegram.userbotGetChatHistory(chatId, limit, callback)
     sendUserbotRequest("messages.getHistory", params, callback)
 end
 
--- поиск сообщений
+-- Поиск сообщений
 function telegram.userbotSearchMessages(chatId, query, callback)
     local params = {
         peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
@@ -743,7 +745,7 @@ function telegram.userbotSearchMessages(chatId, query, callback)
     sendUserbotRequest("messages.search", params, callback)
 end
 
--- установка статуса ввода
+-- Установка статуса ввода
 function telegram.userbotSetTyping(chatId, callback)
     local params = {
         peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
@@ -756,15 +758,15 @@ function telegram.userbotSetTyping(chatId, callback)
     sendUserbotRequest("messages.setTyping", params, callback)
 end
 
--- получение информации о пользователе
-function telegram.userbotGetUserInfo(userId, callback)
+-- Получение информации о пользователе
+function telegram.userbotGetUser(userId, callback)
     local params = {
         user_id = userId
     }
     sendUserbotRequest("users.getUsers", params, callback)
 end
 
--- добавление контакта
+-- Добавление контакта
 function telegram.userbotAddContact(userId, firstName, lastName, callback)
     local params = {
         user_id = userId,
@@ -774,7 +776,7 @@ function telegram.userbotAddContact(userId, firstName, lastName, callback)
     sendUserbotRequest("contacts.addContact", params, callback)
 end
 
--- удаление контакта
+-- Удаление контакта
 function telegram.userbotDeleteContact(userId, callback)
     local params = {
         user_id = userId
@@ -782,12 +784,12 @@ function telegram.userbotDeleteContact(userId, callback)
     sendUserbotRequest("contacts.deleteContact", params, callback)
 end
 
--- получение списка контактов
+-- Получение списка контактов
 function telegram.userbotGetContacts(callback)
     sendUserbotRequest("contacts.getContacts", {}, callback)
 end
 
--- отправка стикера
+-- Отправка стикера
 function telegram.userbotSendSticker(chatId, stickerId, callback)
     local params = {
         peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
@@ -800,7 +802,7 @@ function telegram.userbotSendSticker(chatId, stickerId, callback)
     sendUserbotRequest("messages.sendMedia", params, callback)
 end
 
--- отправка голосового сообщения
+-- Отправка голосового сообщения
 function telegram.userbotSendVoice(chatId, voiceUrl, callback)
     local params = {
         peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
@@ -813,7 +815,7 @@ function telegram.userbotSendVoice(chatId, voiceUrl, callback)
     sendUserbotRequest("messages.sendMedia", params, callback)
 end
 
--- отметка сообщения как прочитанного
+-- Отметка сообщения как прочитанного
 function telegram.userbotMarkMessageRead(chatId, messageId, callback)
     local params = {
         peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
@@ -826,7 +828,7 @@ function telegram.userbotMarkMessageRead(chatId, messageId, callback)
     sendUserbotRequest("messages.readMessageContents", params, callback)
 end
 
--- создание супергруппы
+-- Создание супергруппы
 function telegram.userbotCreateSupergroup(title, callback)
     local params = {
         title = title
@@ -834,7 +836,7 @@ function telegram.userbotCreateSupergroup(title, callback)
     sendUserbotRequest("channels.createChannel", params, callback)
 end
 
--- установка фото профиля
+-- Установка фото профиля
 function telegram.userbotSetProfilePhoto(photoUrl, callback)
     local params = {
         photo = { ["@type"] = "inputPhoto", url = photoUrl }
@@ -842,7 +844,7 @@ function telegram.userbotSetProfilePhoto(photoUrl, callback)
     sendUserbotRequest("photos.uploadProfilePhoto", params, callback)
 end
 
--- обновление статуса
+-- Обновление статуса
 function telegram.userbotUpdateStatus(status, callback)
     local params = {
         status = status
@@ -850,7 +852,7 @@ function telegram.userbotUpdateStatus(status, callback)
     sendUserbotRequest("account.updateStatus", params, callback)
 end
 
--- блокировка пользователя
+-- Блокировка пользователя
 function telegram.userbotBlockUser(userId, callback)
     local params = {
         user_id = userId
@@ -858,7 +860,7 @@ function telegram.userbotBlockUser(userId, callback)
     sendUserbotRequest("contacts.block", params, callback)
 end
 
--- разблокировка пользователя
+-- Разблокировка пользователя
 function telegram.userbotUnblockUser(userId, callback)
     local params = {
         user_id = userId
@@ -866,12 +868,52 @@ function telegram.userbotUnblockUser(userId, callback)
     sendUserbotRequest("contacts.unblock", params, callback)
 end
 
--- получение списка чатов
+-- Получение списка чатов
 function telegram.userbotGetChats(callback)
     sendUserbotRequest("messages.getChats", {}, callback)
 end
 
--- пин сообщения
+-- Установка реакции на сообщение
+function telegram.userbotSetMessageReaction(chatId, messageId, reaction, callback)
+    local params = {
+        peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
+        msg_id = messageId,
+        reaction = { ["@type"] = "reactionEmoji", emoticon = reaction }
+    }
+    if not params.peer.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendUserbotRequest("messages.sendReaction", params, callback)
+end
+
+-- Чтение сообщений
+function telegram.userbotReadMessages(chatId, messageIds, callback)
+    local params = {
+        peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
+        id = messageIds
+    }
+    if not params.peer.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendUserbotRequest("messages.readMessages", params, callback)
+end
+
+-- Получение списка активных сессий
+function telegram.userbotGetSessions(callback)
+    sendUserbotRequest("account.getAuthorizations", {}, callback)
+end
+
+-- Завершение сессии
+function telegram.userbotTerminateSession(sessionId, callback)
+    local params = {
+        session_id = sessionId
+    }
+    sendUserbotRequest("account.resetAuthorization", params, callback)
+end
+
+-- Пин сообщения
 function telegram.userbotPinMessage(chatId, messageId, callback)
     local params = {
         peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId },
@@ -884,7 +926,7 @@ function telegram.userbotPinMessage(chatId, messageId, callback)
     sendUserbotRequest("messages.updatePinnedMessage", params, callback)
 end
 
--- отключение уведомлений
+-- Отключение уведомлений
 function telegram.userbotMuteChat(chatId, callback)
     local params = {
         peer = { ["@type"] = "inputPeerChat", chat_id = chatId or lastChatId }
@@ -896,7 +938,7 @@ function telegram.userbotMuteChat(chatId, callback)
     sendUserbotRequest("messages.toggleNoNotifications", params, callback)
 end
 
--- экспорт данных чата
+-- Экспорт данных чата
 function telegram.userbotExportChat(chatId, callback)
     local params = {
         chat_id = chatId or lastChatId
@@ -908,35 +950,36 @@ function telegram.userbotExportChat(chatId, callback)
     sendUserbotRequest("messages.exportChatInvite", params, callback)
 end
 
--- запуск polling (юзербот)
-function telegram.startUserbotPolling(eventHandler)
+-- Запуск polling (юзербот)
+function telegram.userbotStartPolling(eventHandler)
     mtproto.updates.startPolling(function(update)
         local data = {}
         if update["@type"] == "updateNewMessage" then
-            data.chatId = update.message.chat_id
+            data.chat_id = update.message.chat_id
             data.text = update.message.content.text
-            lastChatId = data.chatId
+            data.channel_post = update.message.is_channel_post
+            lastChatId = data.chat_id
             lastEventData = {
                 first_name = update.message.sender.first_name or "",
                 last_name = update.message.sender.last_name or "",
                 age = update.message.sender.age or "0",
                 last_message_text = data.text or "",
                 username = update.message.sender.username or "",
-                chat_id = tostring(data.chatId)
+                chat_id = tostring(data.chat_id)
             }
-            eventHandler("message", data)
+            eventHandler(data.channel_post and "channel_post" or "message", data)
         elseif update["@type"] == "updateCallbackQuery" then
             data.callbackQueryId = update.id
             data.data = update.data
-            data.chatId = update.chat_id
-            lastChatId = data.chatId
+            data.chat_id = update.chat_id
+            lastChatId = data.chat_id
             lastEventData = {
                 first_name = update.sender.first_name or "",
                 last_name = update.sender.last_name or "",
                 age = update.sender.age or "0",
                 last_message_text = update.message.text or "",
                 username = update.sender.username or "",
-                chat_id = tostring(data.chatId)
+                chat_id = tostring(data.chat_id)
             }
             eventHandler("callback_query", data)
         end
