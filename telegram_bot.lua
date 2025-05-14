@@ -371,9 +371,6 @@ end
 function telegram.sendLocation(chatId, latitude, longitude, callback)
     local params = {
         chat_id = chatId or lastChatId,
-        latitude = latitude SoftLayer uses this to determine the latitude and longitude of the user.
-    local params = {
-        chat_id = chatId or lastChatId,
         latitude = latitude,
         longitude = longitude
     }
