@@ -80,7 +80,7 @@ local function sendBotRequest(method, params, callback)
     end
 end
 
--- отправка сообщения (бот)
+-- отправка сообщения
 function telegram.sendMessage(chatId, text, options, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -93,11 +93,12 @@ function telegram.sendMessage(chatId, text, options, callback)
     if options then
         if options.parseMode then params.parse_mode = options.parseMode end
         if options.disableWebPagePreview then params.disable_web_page_preview = options.disableWebPagePreview end
+        if options.replyMarkup then params.reply_markup = json.encode(options.replyMarkup) end
     end
     sendBotRequest("sendMessage", params, callback)
 end
 
--- отправка медиа (бот)
+-- отправка медиа
 function telegram.sendMedia(chatId, type, media, options, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -114,7 +115,7 @@ function telegram.sendMedia(chatId, type, media, options, callback)
     sendBotRequest("send" .. type:gsub("^%l", string.upper), params, callback)
 end
 
--- отправка inline-клавиатуры (бот)
+-- отправка inline-клавиатуры
 function telegram.sendInlineKeyboard(chatId, text, keyboard, callback)
     local params = {
         chat_id = chatId or lastChatId,
@@ -128,7 +129,7 @@ function telegram.sendInlineKeyboard(chatId, text, keyboard, callback)
     sendBotRequest("sendMessage", params, callback)
 end
 
--- ответ на callback-запрос (бот)
+-- ответ на callback-запрос
 function telegram.answerCallbackQuery(callbackQueryId, text, showAlert, callback)
     local params = {
         callback_query_id = callbackQueryId
@@ -136,6 +137,306 @@ function telegram.answerCallbackQuery(callbackQueryId, text, showAlert, callback
     if text then params.text = replaceConstants(text) end
     if showAlert then params.show_alert = showAlert end
     sendBotRequest("answerCallbackQuery", params, callback)
+end
+
+-- редактирование сообщения
+function telegram.editMessage(chatId, messageId, text, options, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        message_id = messageId,
+        text = replaceConstants(text)
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    if options then
+        if options.parseMode then params.parse_mode = options.parseMode end
+        if options.replyMarkup then params.reply_markup = json.encode(options.replyMarkup) end
+    end
+    sendBotRequest("editMessageText", params, callback)
+end
+
+-- удаление сообщения
+function telegram.deleteMessage(chatId, messageId, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        message_id = messageId
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("deleteMessage", params, callback)
+end
+
+-- получение информации о чате
+function telegram.getChat(chatId, callback)
+    local params = {
+        chat_id = chatId or lastChatId
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("getChat", params, callback)
+end
+
+-- получение администраторов чата
+function telegram.getChatAdministrators(chatId, callback)
+    local params = {
+        chat_id = chatId or lastChatId
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("getChatAdministrators", params, callback)
+end
+
+-- получение участника чата
+function telegram.getChatMember(chatId, userId, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        user_id = userId
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("getChatMember", params, callback)
+end
+
+-- кик участника чата
+function telegram.kickChatMember(chatId, userId, untilDate, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        user_id = userId
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    if untilDate then params.until_date = untilDate end
+    sendBotRequest("kickChatMember", params, callback)
+end
+
+-- ограничение участника чата
+function telegram.restrictChatMember(chatId, userId, permissions, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        user_id = userId,
+        permissions = json.encode(permissions)
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("restrictChatMember", params, callback)
+end
+
+-- повышение участника до админа
+function telegram.promoteChatMember(chatId, userId, options, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        user_id = userId
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    if options then
+        for k, v in pairs(options) do
+            params[k] = v
+        end
+    end
+    sendBotRequest("promoteChatMember", params, callback)
+end
+
+-- установка заголовка чата
+function telegram.setChatTitle(chatId, title, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        title = title
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("setChatTitle", params, callback)
+end
+
+-- установка описания чата
+function telegram.setChatDescription(chatId, description, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        description = description
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("setChatDescription", params, callback)
+end
+
+-- закрепление сообщения
+function telegram.pinChatMessage(chatId, messageId, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        message_id = messageId
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("pinChatMessage", params, callback)
+end
+
+-- открепление сообщения
+function telegram.unpinChatMessage(chatId, messageId, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        message_id = messageId
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("unpinChatMessage", params, callback)
+end
+
+-- выход из чата
+function telegram.leaveChat(chatId, callback)
+    local params = {
+        chat_id = chatId or lastChatId
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("leaveChat", params, callback)
+end
+
+-- получение фото профиля
+function telegram.getUserProfilePhotos(userId, callback)
+    local params = {
+        user_id = userId
+    }
+    sendBotRequest("getUserProfilePhotos", params, callback)
+end
+
+-- отправка стикера
+function telegram.sendSticker(chatId, sticker, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        sticker = sticker
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("sendSticker", params, callback)
+end
+
+-- отправка голосового сообщения
+function telegram.sendVoice(chatId, voice, options, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        voice = voice
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    if options then
+        if options.caption then params.caption = replaceConstants(options.caption) end
+    end
+    sendBotRequest("sendVoice", params, callback)
+end
+
+-- отправка видеозаметки
+function telegram.sendVideoNote(chatId, videoNote, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        video_note = videoNote
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("sendVideoNote", params, callback)
+end
+
+-- отправка геолокации
+function telegram.sendLocation(chatId, latitude, longitude, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        latitude = latitude,
+        longitude = longitude
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("sendLocation", params, callback)
+end
+
+-- отправка контакта
+function telegram.sendContact(chatId, phoneNumber, firstName, lastName, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        phone_number = phoneNumber,
+        first_name = firstName
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    if lastName then params.last_name = lastName end
+    sendBotRequest("sendContact", params, callback)
+end
+
+-- пересылка сообщения
+function telegram.forwardMessage(chatId, fromChatId, messageId, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        from_chat_id = fromChatId,
+        message_id = messageId
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("forwardMessage", params, callback)
+end
+
+-- копирование сообщения
+function telegram.copyMessage(chatId, fromChatId, messageId, callback)
+    local params = {
+        chat_id = chatId or lastChatId,
+        from_chat_id = fromChatId,
+        message_id = messageId
+    }
+    if not params.chat_id then
+        if callback then callback(nil, "chatId не указан и нет активного чата") end
+        return
+    end
+    sendBotRequest("copyMessage", params, callback)
+end
+
+-- получение информации о боте
+function telegram.getMe(callback)
+    sendBotRequest("getMe", {}, callback)
+end
+
+-- выход из аккаунта бота
+function telegram.logOut(callback)
+    sendBotRequest("logOut", {}, callback)
+end
+
+-- закрытие сессии бота
+function telegram.close(callback)
+    sendBotRequest("close", {}, callback)
 end
 
 -- запуск polling (бот)
@@ -187,12 +488,12 @@ function telegram.startBotPolling(eventHandler)
     poll()
 end
 
--- настройка вебхука (бот)
+-- настройка вебхука
 function telegram.setWebhook(url, callback)
     sendBotRequest("setWebhook", {url = url}, callback)
 end
 
--- удаление вебхука (бот)
+-- удаление вебхука
 function telegram.deleteWebhook(callback)
     sendBotRequest("deleteWebhook", {}, callback)
 end
@@ -278,7 +579,7 @@ local function sendUserbotRequest(method, params, callback)
     end)
 end
 
--- 30+ методов для юзерботов
+-- методы юзербота (30)
 
 -- отправка сообщения
 function telegram.userbotSendMessage(chatId, text, options, callback)
@@ -369,7 +670,7 @@ end
 function telegram.userbotCreateChat(title, users, callback)
     local params = {
         title = title,
-        users = users -- массив user_id
+        users = users
     }
     sendUserbotRequest("messages.createChat", params, callback)
 end
